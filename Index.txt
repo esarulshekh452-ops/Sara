@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LuvuBox Media → OLED Animation JSON</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#101117;
+  --panel:#191b25;
+  --panel-alt:#141620;
+  --line:#303342;
+  --pink:#ff4f91;
+  --pink-hover:#ff6b9f;
+  --pink-subtle:#302331;
+  --pink-text:#ff9fc1;
+  --muted:#a9adbd;
+  --text:#f5f5fa;
+  --border:#3a3d4d;
+  --warn:#ffd18a;
+  --err:#ff6b6b;
+  --success:#a8f0c4;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+main{
+  max-width:1120px;
+  margin:auto;
+  padding:24px 16px 50px;
+}
+h1{
+  font-size:clamp(24px,4.5vw,36px);
+  margin:0 0 6px;
+  font-weight:800;
+  letter-spacing:-0.02em;
+}
+h1 span{color:var(--pink)}
+.sub{color:var(--muted);margin:0 0 20px;font-size:14.5px;max-width:760px}
+.pill{
+  display:inline-block;
+  border-radius:99px;
+  background:var(--pink-subtle);
+  color:var(--pink-text);
+  padding:4px 11px;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.mode-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:600;
+  background:#262939;
+  color:#fff;
+  border:1px solid var(--line);
+}
+.mode-badge.image{border-color:#4a68a5;color:#9bc0ff}
+.mode-badge.video{border-color:var(--pink);color:var(--pink-text)}
+
+.layout{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));
+  gap:18px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:18px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+}
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+h2{
+  font-size:17px;
+  margin:0;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+label{
+  display:block;
+  color:#d8d9e2;
+  font-size:13px;
+  font-weight:500;
+  margin:12px 0 5px;
+}
+input,select,button,textarea{font:inherit}
+input[type=text],input[type=number],select,textarea{
+  width:100%;
+  background:#10121a;
+  color:#fff;
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:9px 11px;
+  transition:border-color .15s ease;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:var(--pink);
+}
+input[type=file]{
+  width:100%;
+  padding:14px;
+  background:#10121a;
+  border:1px dashed #4b4e60;
+  border-radius:10px;
+  cursor:pointer;
+  transition:border-color .2s;
+}
+input[type=file]:hover{border-color:var(--pink)}
+input[type=range]{width:100%;accent-color:var(--pink);margin:6px 0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.checks{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+.checks label{display:flex;align-items:center;gap:7px;margin:0;cursor:pointer}
+button{
+  border:0;
+  border-radius:9px;
+  padding:10px 15px;
+  font-weight:700;
+  font-size:13.5px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  transition:background .15s,opacity .15s;
+}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.primary{background:var(--pink);color:#1b0710}
+.primary:hover:not(:disabled){background:var(--pink-hover)}
+.secondary{background:#303343;color:#fff}
+.secondary:hover:not(:disabled){background:#3c4054}
+.danger{background:#54252b;color:#ff9e9e}
+.danger:hover:not(:disabled){background:#692e35}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+.preview-wrap{
+  background:#08090d;
+  border:1px solid #383b4a;
+  border-radius:12px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-height:190px;
+  position:relative;
+}
+canvas{
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  max-width:100%;
+  height:auto;
+  background:#000;
+  border:1px solid #202330;
+  border-radius:4px;
+}
+.info{color:var(--muted);font-size:12px;margin:8px 0}
+textarea{
+  min-height:220px;
+  resize:vertical;
+  font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;
+  white-space:pre;
+}
+.status{
+  margin-top:12px;
+  color:var(--success);
+  font-size:13px;
+  overflow-wrap:anywhere;
+  padding:8px 12px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+}
+.status.warn{color:var(--warn);border-color:rgba(255,209,138,0.2)}
+.status.err{color:var(--err);border-color:rgba(255,107,107,0.2)}
+.hidden{display:none !important}
+
+/* Media preview players */
+.media-container{
+  margin:12px 0 6px;
+  background:#0b0c12;
+  border-radius:10px;
+  border:1px solid var(--border);
+  padding:10px;
+}
+video.source-video{
+  width:100%;
+  max-height:220px;
+  border-radius:6px;
+  background:#000;
+  display:block;
+}
+.video-meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:11.5px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
+/* Progress bar */
+.progress-bar-wrap{
+  width:100%;
+  height:8px;
+  background:#262939;
+  border-radius:4px;
+  overflow:hidden;
+  margin:10px 0 4px;
+}
+.progress-bar{
+  width:0%;
+  height:100%;
+  background:var(--pink);
+  transition:width .1s linear;
+}
+
+/* Simulator controls */
+.sim-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.sim-scrub{
+  flex:1;
+  min-width:120px;
+}
+.sim-btn{
+  padding:6px 12px;
+  font-size:12.5px;
+  border-radius:6px;
+}
+.sim-stats{
+  display:flex;
+  justify-content:space-between;
+  width:100%;
+  font-size:11.5px;
+  color:var(--muted);
+  margin-top:6px;
+  font-family:ui-monospace,monospace;
+}
+.validation-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 8px;
+  border-radius:4px;
+  font-size:11.5px;
+  font-weight:600;
+  background:#1a2b21;
+  color:#7ee787;
+  border:1px solid #2ea043;
+}
+.validation-tag.fail{
+  background:#381a1e;
+  color:#ff9e9e;
+  border-color:#da3633;
+}
+.validation-details{
+  font-size:12px;
+  margin:8px 0;
+  line-height:1.45;
+  color:var(--muted);
+}
+</style>
+</head>
+<body><main>
+<div class="pill">Offline Studio · 100% Client-Side In-Browser</div>
+<h1>LuvuBox <span>Image + Video → OLED JSON</span></h1>
+<p class="sub">Convert pictures or video clips into firmware-compatible monochrome animations. Live-simulate exact drawing opcodes before exporting to your LuvuBox.</p>
+
+<section class="card">
+  <div class="card-header">
+    <h2>1. Media Source Selection</h2>
+    <div id="modeBadge" class="mode-badge hidden">No file chosen</div>
+  </div>
+  <label for="mediaFile">Select Image or Video file (PNG, JPG, WebP, GIF, MP4, WebM, MOV)</label>
+  <input id="mediaFile" type="file" accept="image/*,video/*">
+  <div id="emptyNotice" class="info" style="margin-top:10px;">
+    Drop or select any image or video file to unlock mode-specific OLED conversion controls.
+  </div>
+</section>
+
+<div class="layout">
+  <!-- LEFT: Configuration Panels (Image / Video) -->
+  <section class="card" id="configCard">
+    <!-- Image Controls -->
+    <div id="imagePanel" class="hidden">
+      <div class="card-header">
+        <h2>2. Image Tuning & Fit</h2>
+        <span class="mode-badge image">Image Mode</span>
+      </div>
+      <div class="row">
+        <div>
+          <label for="imgWidth">OLED Width</label>
+          <select id="imgWidth">
+            <option value="128" selected>128 px</option>
+            <option value="172">172 px</option>
+            <option value="64">64 px</option>
+            <option value="96">96 px</option>
+          </select>
+        </div>
+        <div>
+          <label for="imgHeight">OLED Height</label>
+          <select id="imgHeight">
+            <option value="64" selected>64 px</option>
+            <option value="320">320 px</option>
+            <option value="32">32 px</option>
+            <option value="128">128 px</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="imgFit">Resize Mode</label>
+      <select id="imgFit">
+        <option value="contain">Fit — keep whole picture (aspect black bars)</option>
+        <option value="cover">Fill — crop edges to fill display</option>
+        <option value="stretch">Stretch — stretch to fill display exactly</option>
+      </select>
+
+      <label for="imgThreshold">Black/White Threshold: <strong id="imgTv">128</strong></label>
+      <input id="imgThreshold" type="range" min="30" max="230" value="128">
+
+      <div class="checks">
+        <label><input id="imgDither" type="checkbox" checked> Floyd–Steinberg Dithering</label>
+        <label><input id="imgInvert" type="checkbox"> Invert Monochrome</label>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="imgAnimName">Animation Name</label>
+          <input id="imgAnimName" type="text" value="Still Image" maxlength="48">
+        </div>
+        <div>
+          <label for="imgFrameMs">Frame Time (ms)</label>
+          <input id="imgFrameMs" type="number" value="150" min="40" max="1000" step="10">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="imgConvertBtn">Convert Image</button>
+        <button class="secondary" id="imgResetBtn">Reset</button>
+      </div>
+    </div>
+
+    <!-- Video Controls -->
+    <div id="videoPanel" class="hidden">
+      <div class="card-header">
+        <h2>2. Video Sampling & Settings</h2>
+        <span class="mode-badge video">Video Mode</span>
+      </div>
+
+      <div class="media-container">
+        <video id="sourceVideo" class="source-video" controls muted playsinline></video>
+        <div class="video-meta">
+          <span id="videoRes">Res: --</span>
+          <span id="videoDuration">Dur: --</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="vidWidth">OLED Width</label>
+          <select id="vidWidth">
+            <option value="128" selected>128 px</option>
+            <option value="172">172 px</option>
+            <option value="64">64 px</option>
+            <option value="96">96 px</option>
+          </select>
+        </div>
+        <div>
+          <label for="vidHeight">OLED Height</label>
+          <select id="vidHeight">
+            <option value="64" selected>64 px</option>
+            <option value="320">320 px</option>
+            <option value="32">32 px</option>
+            <option value="128">128 px</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="vidFit">Resize Mode</label>
+      <select id="vidFit">
+        <option value="contain">Fit — keep aspect ratio (black bars)</option>
+        <option value="cover">Fill — crop edges</option>
+        <option value="stretch">Stretch — stretch to fill</option>
+      </select>
+
+      <div class="row-3">
+        <div>
+          <label for="vidFps">FPS (1–15)</label>
+          <input id="vidFps" type="number" min="1" max="15" value="6" step="1">
+        </div>
+        <div>
+          <label for="vidStart">Start Sec</label>
+          <input id="vidStart" type="number" min="0" step="0.1" value="0.0">
+        </div>
+        <div>
+          <label for="vidEnd">End Sec</label>
+          <input id="vidEnd" type="number" min="0.1" step="0.1" value="5.0">
+        </div>
+      </div>
+
+      <label for="vidThreshold">Black/White Threshold: <strong id="vidTv">128</strong></label>
+      <input id="vidThreshold" type="range" min="30" max="230" value="128">
+
+      <div class="checks">
+        <label><input id="vidDither" type="checkbox"> Dither (Notice: Dither uses more rect ops)</label>
+        <label><input id="vidInvert" type="checkbox"> Invert Monochrome</label>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="vidAnimName">Animation Name</label>
+          <input id="vidAnimName" type="text" value="Video Clip" maxlength="48">
+        </div>
+        <div>
+          <label for="vidMaxFrames">Max Frames (≤ 100)</label>
+          <input id="vidMaxFrames" type="number" min="1" max="100" value="60">
+        </div>
+      </div>
+
+      <div id="vidProgressWrap" class="progress-bar-wrap hidden">
+        <div id="vidProgressBar" class="progress-bar"></div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="vidConvertBtn">Convert Video</button>
+        <button class="danger hidden" id="vidCancelBtn">Cancel</button>
+        <button class="secondary" id="vidResetBtn">Reset</button>
+      </div>
+      <p class="info">Firmware limit: Max 100 frames, ≤40 drawing operations per frame. Framerate is locked to 1000/frameMs for exact playback matching.</p>
+    </div>
+
+    <!-- Default empty state placeholder when no file chosen -->
+    <div id="noFileCard">
+      <h2>Select Media</h2>
+      <p class="info">Choose an image or video above to begin conversion.</p>
+    </div>
+  </section>
+
+  <!-- RIGHT: Real OLED Simulator & Validator -->
+  <section class="card">
+    <div class="card-header">
+      <h2>3. OLED Hardware Simulator</h2>
+      <div id="simValidationTag" class="validation-tag">Awaiting Media</div>
+    </div>
+    
+    <div class="preview-wrap">
+      <canvas id="simCanvas" width="128" height="64"></canvas>
+    </div>
+
+    <!-- Simulator controls -->
+    <div class="sim-controls">
+      <button class="secondary sim-btn" id="simPlayPause" disabled>▶ Play</button>
+      <button class="secondary sim-btn" id="simStepBack" disabled>⏮</button>
+      <button class="secondary sim-btn" id="simStepNext" disabled>⏭</button>
+      <input type="range" id="simScrubber" class="sim-scrub" min="0" max="0" value="0" disabled>
+    </div>
+
+    <div class="sim-stats">
+      <span id="simFrameCounter">Frame: 0 / 0</span>
+      <span id="simTiming">Interval: -- ms (-- fps)</span>
+    </div>
+
+    <div id="validationDetails" class="validation-details">
+      No animation converted yet.
+    </div>
+
+    <div id="statusBox" class="status">Choose a file to start.</div>
+  </section>
+</div>
+
+<!-- BOTTOM: JSON Export & Firmware Verification -->
+<section class="card">
+  <div class="card-header">
+    <h2>4. Export LuvuBox JSON</h2>
+    <span class="info" id="jsonSizeLabel">Payload size: 0 bytes (Firmware max ~16,000 bytes)</span>
+  </div>
+  <p class="info">
+    Strictly conforms to LuvuBox firmware: <code>name</code>, <code>frameMs</code>, and <code>frames</code> array using <code>{"t":"C"}</code> and <code>{"t":"r","a":x,"b":y,"c":w,"d":h}</code>.
+  </p>
+  <div class="actions">
+    <button class="primary" id="downloadJsonBtn" disabled>Download JSON</button>
+    <button class="secondary" id="copyJsonBtn" disabled>Copy JSON</button>
+  </div>
+  <label for="jsonOutput" style="margin-top:12px;">JSON Output</label>
+  <textarea id="jsonOutput" spellcheck="false" placeholder="Your production-ready LuvuBox JSON will appear here..."></textarea>
+</section>
+</main>
+
+<script>
+/**
+ * LuvuBox OLED Media to JSON Converter & Hardware Simulator
+ * Strictly adheres to LuvuBox firmware constraints:
+ * - Max 100 frames
+ * - Max 40 drawing operations per frame (C = Clear, r = Fill Rect)
+ * - frameMs within 40ms .. 1000ms
+ * - JSON payload size <= ~16KB
+ */
+
+const $ = id => document.getElementById(id);
+
+// State store
+const state = {
+  activeMode: null, // 'image' | 'video' | null
+  imageFile: null,
+  imageObj: null,
+  videoFile: null,
+  videoUrl: null,
+  isConvertingVideo: false,
+  cancelVideoConversion: false,
+  
+  // Converted animation payload
+  animation: null, // { name, frameMs, frames: [[{t:'C'}, ...]] }
+  rawJson: "",
+  
+  // Simulator state
+  simPlaying: false,
+  simFrameIndex: 0,
+  simTimer: null,
+  simTargetWidth: 128,
+  simTargetHeight: 64,
+  
+  // Settings persistence
+  imageSettings: {
+    width: 128,
+    height: 64,
+    fit: 'contain',
+    threshold: 128,
+    dither: true,
+    invert: false,
+    name: 'Still Image',
+    frameMs: 150
+  },
+  videoSettings: {
+    width: 128,
+    height: 64,
+    fit: 'contain',
+    fps: 6,
+    start: 0.0,
+    end: 5.0,
+    threshold: 128,
+    dither: false,
+    invert: false,
+    name: 'Video Clip',
+    maxFrames: 60
+  }
+};
+
+// Canvas references
+const simCanvas = $("simCanvas");
+const simCtx = simCanvas.getContext("2d", { willReadFrequently: true });
+
+// Offscreen scratch canvas
+const scratchCanvas = document.createElement("canvas");
+const scratchCtx = scratchCanvas.getContext("2d", { willReadFrequently: true });
+
+// --- Helpers ---
+function setStatus(text, type = "normal") {
+  const el = $("statusBox");
+  el.textContent = text;
+  el.className = "status" + (type === "warn" ? " warn" : type === "err" ? " err" : "");
+}
+
+function updateValidationUI(valid, msg, details) {
+  const tag = $("simValidationTag");
+  const det = $("validationDetails");
+  if (!state.animation) {
+    tag.textContent = "Awaiting Media";
+    tag.className = "validation-tag";
+    det.textContent = "No animation converted yet.";
+    return;
+  }
+  if (valid) {
+    tag.textContent = "✓ Firmware Valid";
+    tag.className = "validation-tag";
+  } else {
+    tag.textContent = "⚠ Limit Exceeded";
+    tag.className = "validation-tag fail";
+  }
+  det.innerHTML = details;
+}
+
+// Format seconds to mm:ss.s
+function formatTime(sec) {
+  if (isNaN(sec) || !isFinite(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = (sec % 60).toFixed(1);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+// Clean up object URLs
+function cleanupVideoUrl() {
+  if (state.videoUrl) {
+    URL.revokeObjectURL(state.videoUrl);
+    state.videoUrl = null;
+  }
+}
+
+// Reset simulator display
+function clearSimulator() {
+  stopSimulator();
+  state.simFrameIndex = 0;
+  state.animation = null;
+  state.rawJson = "";
+  $("jsonOutput").value = "";
+  $("downloadJsonBtn").disabled = true;
+  $("copyJsonBtn").disabled = true;
+  $("simPlayPause").disabled = true;
+  $("simStepBack").disabled = true;
+  $("simStepNext").disabled = true;
+  $("simScrubber").disabled = true;
+  $("simScrubber").max = 0;
+  $("simScrubber").value = 0;
+  $("simFrameCounter").textContent = "Frame: 0 / 0";
+  $("simTiming").textContent = "Interval: -- ms (-- fps)";
+  $("jsonSizeLabel").textContent = "Payload size: 0 bytes (Firmware max ~16,000 bytes)";
+  
+  simCanvas.width = state.simTargetWidth;
+  simCanvas.height = state.simTargetHeight;
+  simCtx.fillStyle = "#000000";
+  simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+  updateValidationUI(false, "", "");
+}
+
+// --- Mode Management ---
+function setMode(mode) {
+  state.activeMode = mode;
+  stopSimulator();
+  
+  const badge = $("modeBadge");
+  const imgPanel = $("imagePanel");
+  const vidPanel = $("videoPanel");
+  const noFileCard = $("noFileCard");
+  
+  if (mode === "image") {
+    badge.className = "mode-badge image";
+    badge.textContent = "Image Mode Active";
+    badge.classList.remove("hidden");
+    imgPanel.classList.remove("hidden");
+    vidPanel.classList.add("hidden");
+    noFileCard.classList.add("hidden");
+    state.simTargetWidth = +$("imgWidth").value;
+    state.simTargetHeight = +$("imgHeight").value;
+  } else if (mode === "video") {
+    badge.className = "mode-badge video";
+    badge.textContent = "Video Mode Active";
+    badge.classList.remove("hidden");
+    imgPanel.classList.add("hidden");
+    vidPanel.classList.remove("hidden");
+    noFileCard.classList.add("hidden");
+    state.simTargetWidth = +$("vidWidth").value;
+    state.simTargetHeight = +$("vidHeight").value;
+  } else {
+    badge.className = "mode-badge hidden";
+    imgPanel.classList.add("hidden");
+    vidPanel.classList.add("hidden");
+    noFileCard.classList.remove("hidden");
+  }
+  clearSimulator();
+}
+
+// File input handler
+$("mediaFile").addEventListener("change", e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) {
+    setMode(null);
+    setStatus("Choose an image or video to begin.");
+    return;
+  }
+
+  if (file.type.startsWith("image/")) {
+    setMode("image");
+    state.imageFile = file;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      state.imageObj = img;
+      URL.revokeObjectURL(url);
+      convertImage();
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setStatus("Could not decode selected image.", "err");
+    };
+    img.src = url;
+  } else if (file.type.startsWith("video/") || file.name.match(/\.(mp4|webm|mov|m4v|mkv)$/i)) {
+    setMode("video");
+    state.videoFile = file;
+    cleanupVideoUrl();
+    state.videoUrl = URL.createObjectURL(file);
+    const vid = $("sourceVideo");
+    vid.src = state.videoUrl;
+    vid.load();
+    vid.onloadedmetadata = () => {
+      $("videoRes").textContent = `Res: ${vid.videoWidth}×${vid.videoHeight}px`;
+      $("videoDuration").textContent = `Dur: ${formatTime(vid.duration)} (${vid.duration.toFixed(2)}s)`;
+      $("vidStart").value = 0.0;
+      const endSec = Math.min(vid.duration, 5.0).toFixed(1);
+      $("vidEnd").value = endSec;
+      $("vidEnd").max = vid.duration.toFixed(1);
+      setStatus(`Video loaded: ${vid.videoWidth}×${vid.videoHeight}, ${vid.duration.toFixed(2)}s. Configure settings and click Convert.`);
+    };
+    vid.onerror = () => {
+      setStatus("Error loading video. Format may not be supported by this browser.", "err");
+    };
+  } else {
+    setStatus("Unsupported file type. Please upload an image or video.", "err");
+  }
+});
+
+// Sync image slider value
+$("imgThreshold").addEventListener("input", () => {
+  $("imgTv").textContent = $("imgThreshold").value;
+  if (state.activeMode === "image" && state.imageObj) convertImage();
+});
+
+// Sync video slider value
+$("vidThreshold").addEventListener("input", () => {
+  $("vidTv").textContent = $("vidThreshold").value;
+});
+
+// Image config changes
+["imgWidth", "imgHeight", "imgFit", "imgDither", "imgInvert"].forEach(id => {
+  $(id).addEventListener("change", () => {
+    if (state.activeMode === "image" && state.imageObj) convertImage();
+  });
+});
+
+$("imgConvertBtn").addEventListener("click", () => {
+  if (state.imageObj) convertImage();
+  else setStatus("Choose an image first.", "warn");
+});
+
+$("imgResetBtn").addEventListener("click", () => {
+  state.imageObj = null;
+  state.imageFile = null;
+  $("mediaFile").value = "";
+  setMode(null);
+  setStatus("Cleared image. Select another file.");
+});
+
+// --- CORE MONOCHROME & RECT OP-FINDER ---
+/**
+ * Resize input frame to target resolution with selected fit mode
+ */
+function fitFrame(source, srcW, srcH, targetW, targetH, mode) {
+  scratchCanvas.width = targetW;
+  scratchCanvas.height = targetH;
+  scratchCtx.fillStyle = "#000000";
+  scratchCtx.fillRect(0, 0, targetW, targetH);
+
+  if (mode === "stretch") {
+    scratchCtx.drawImage(source, 0, 0, targetW, targetH);
+  } else {
+    const scale = mode === "cover"
+      ? Math.max(targetW / srcW, targetH / srcH)
+      : Math.min(targetW / srcW, targetH / srcH);
+    const dw = srcW * scale;
+    const dh = srcH * scale;
+    scratchCtx.drawImage(source, (targetW - dw) / 2, (targetH - dh) / 2, dw, dh);
+  }
+  return scratchCtx.getImageData(0, 0, targetW, targetH);
+}
+
+/**
+ * Convert ImageData to monochrome 1D Uint8Array bits (0 or 1)
+ */
+function toMonochromeBits(imgData, targetW, targetH, threshold, dither, invert) {
+  const data = imgData.data;
+  const gray = new Float32Array(targetW * targetH);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    // Standard perceptual luminance
+    gray[p] = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * (data[i + 3] / 255);
+  }
+
+  let bits;
+  if (dither) {
+    for (let y = 0; y < targetH; y++) {
+      for (let x = 0; x < targetW; x++) {
+        const i = y * targetW + x;
+        const oldVal = gray[i];
+        const newVal = oldVal >= threshold ? 255 : 0;
+        gray[i] = newVal;
+        const err = oldVal - newVal;
+        if (x + 1 < targetW) gray[i + 1] += err * 7 / 16;
+        if (y + 1 < targetH) {
+          if (x > 0) gray[i + targetW - 1] += err * 3 / 16;
+          gray[i + targetW] += err * 5 / 16;
+          if (x + 1 < targetW) gray[i + targetW + 1] += err * 1 / 16;
+        }
+      }
+    }
+    bits = new Uint8Array(targetW * targetH);
+    for (let i = 0; i < bits.length; i++) bits[i] = gray[i] >= 128 ? 1 : 0;
+  } else {
+    bits = new Uint8Array(targetW * targetH);
+    for (let i = 0; i < bits.length; i++) bits[i] = gray[i] >= threshold ? 1 : 0;
+  }
+
+  if (invert) {
+    for (let i = 0; i < bits.length; i++) bits[i] = 1 - bits[i];
+  }
+  return bits;
+}
+
+/**
+ * Generate LuvuBox draw operations from monochrome bits.
+ * Guaranteed to respect maxOps (firmware MAX_ANIM_OPS = 40, including Clear op).
+ */
+function bitsToDrawOps(bits, W, H, maxRectOps = 39) {
+  let ops = [];
+  let chosenBlock = 1;
+
+  for (let block = 1; block <= Math.max(W, H); block *= 2) {
+    const gw = Math.ceil(W / block);
+    const gh = Math.ceil(H / block);
+    const grid = new Uint8Array(gw * gh);
+
+    for (let by = 0; by < gh; by++) {
+      for (let bx = 0; bx < gw; bx++) {
+        let on = 0, total = 0;
+        const yMax = Math.min(H, (by + 1) * block);
+        const xMax = Math.min(W, (bx + 1) * block);
+        for (let yy = by * block; yy < yMax; yy++) {
+          for (let xx = bx * block; xx < xMax; xx++) {
+            on += bits[yy * W + xx];
+            total++;
+          }
+        }
+        grid[by * gw + bx] = (on >= Math.ceil(total * 0.38)) ? 1 : 0;
+      }
+    }
+
+    // Horizontal run-length encoding
+    const runs = [];
+    for (let y = 0; y < gh; y++) {
+      let x = 0;
+      while (x < gw) {
+        if (!grid[y * gw + x]) { x++; continue; }
+        const start = x;
+        while (x < gw && grid[y * gw + x]) x++;
+        runs.push({ x: start, y, w: x - start, h: 1 });
+      }
+    }
+
+    // Merge vertically adjacent runs with identical horizontal coverage
+    const merged = [];
+    const active = new Map();
+    for (let y = 0; y < gh; y++) {
+      const row = runs.filter(r => r.y === y);
+      const nextActive = new Map();
+      for (const r of row) {
+        const key = r.x + ":" + r.w;
+        const prev = active.get(key);
+        if (prev && (prev.y + prev.h === y)) {
+          prev.h++;
+          nextActive.set(key, prev);
+        } else {
+          merged.push(r);
+          nextActive.set(key, r);
+        }
+      }
+      active.clear();
+      for (const [k, v] of nextActive) active.set(k, v);
+    }
+
+    // Convert merged rectangles to LuvuBox 'r' operations
+    ops = merged.map(r => ({
+      t: "r",
+      a: Math.round(r.x * W / gw),
+      b: Math.round(r.y * H / gh),
+      c: Math.max(1, Math.round((r.x + r.w) * W / gw) - Math.round(r.x * W / gw)),
+      d: Math.max(1, Math.round((r.y + r.h) * H / gh) - Math.round(r.y * H / gh))
+    }));
+
+    chosenBlock = block;
+    if (ops.length <= maxRectOps) break;
+  }
+
+  // Safety hard-clamp to max allowable rect operations
+  if (ops.length > maxRectOps) {
+    ops = ops.slice(0, maxRectOps);
+  }
+
+  // Frame structure: always begins with Clear screen command {"t":"C"}
+  return {
+    frameOps: [{ t: "C" }, ...ops],
+    block: chosenBlock
+  };
+}
+
+// --- CONVERT IMAGE ---
+function convertImage() {
+  if (!state.imageObj) return;
+  const W = +$("imgWidth").value;
+  const H = +$("imgHeight").value;
+  const threshold = +$("imgThreshold").value;
+  const dither = $("imgDither").checked;
+  const invert = $("imgInvert").checked;
+  const fit = $("imgFit").value;
+  const animName = ($("imgAnimName").value.trim() || "Still Image").slice(0, 48);
+  const rawFrameMs = +$("imgFrameMs").value || 150;
+  const frameMs = Math.max(40, Math.min(1000, rawFrameMs));
+
+  state.simTargetWidth = W;
+  state.simTargetHeight = H;
+
+  const imgData = fitFrame(state.imageObj, state.imageObj.width, state.imageObj.height, W, H, fit);
+  const bits = toMonochromeBits(imgData, W, H, threshold, dither, invert);
+  const { frameOps, block } = bitsToDrawOps(bits, W, H, 39);
+
+  const anim = {
+    name: animName,
+    frameMs: frameMs,
+    frames: [frameOps]
+  };
+
+  finishConversion(anim, `Ready · 1 still frame · ${frameOps.length}/40 drawing ops${block > 1 ? " · simplified " + block + "x" + block : ""}`);
+}
+
+// --- CONVERT VIDEO ---
+$("vidConvertBtn").addEventListener("click", async () => {
+  if (!state.videoFile || !state.videoUrl) {
+    setStatus("Select a video file first.", "warn");
+    return;
+  }
+  if (state.isConvertingVideo) return;
+  await startVideoConversion();
+});
+
+$("vidCancelBtn").addEventListener("click", () => {
+  if (state.isConvertingVideo) {
+    state.cancelVideoConversion = true;
+    setStatus("Cancelling video conversion...", "warn");
+  }
+});
+
+$("vidResetBtn").addEventListener("click", () => {
+  cleanupVideoUrl();
+  state.videoFile = null;
+  $("mediaFile").value = "";
+  $("sourceVideo").src = "";
+  setMode(null);
+  setStatus("Video cleared. Choose a new file.");
+});
+
+async function startVideoConversion() {
+  const vid = $("sourceVideo");
+  if (!vid.duration) {
+    setStatus("Video metadata not ready. Please wait a moment.", "warn");
+    return;
+  }
+
+  const W = +$("vidWidth").value;
+  const H = +$("vidHeight").value;
+  const fit = $("vidFit").value;
+  const fps = Math.max(1, Math.min(15, +$("vidFps").value || 6));
+  const threshold = +$("vidThreshold").value;
+  const dither = $("vidDither").checked;
+  const invert = $("vidInvert").checked;
+  const maxFramesSetting = Math.max(1, Math.min(100, +$("vidMaxFrames").value || 60));
+  const animName = ($("vidAnimName").value.trim() || "Video Clip").slice(0, 48);
+
+  let startSec = Math.max(0, parseFloat($("vidStart").value) || 0);
+  let endSec = parseFloat($("vidEnd").value) || vid.duration;
+  if (startSec >= vid.duration) startSec = 0;
+  if (endSec <= startSec || endSec > vid.duration) endSec = vid.duration;
+
+  // Frame timing in ms (1000 / fps clamped between 40ms and 1000ms)
+  const frameMs = Math.max(40, Math.min(1000, Math.round(1000 / fps)));
+  const stepSec = 1.0 / fps;
+
+  // Calculate timestamps
+  const timestamps = [];
+  for (let t = startSec; t < endSec && timestamps.length < maxFramesSetting; t += stepSec) {
+    timestamps.push(t);
+  }
+
+  if (timestamps.length === 0) {
+    setStatus("No frames extracted with selected time range.", "err");
+    return;
+  }
+
+  // Set converting UI state
+  state.isConvertingVideo = true;
+  state.cancelVideoConversion = false;
+  $("vidConvertBtn").disabled = true;
+  $("vidCancelBtn").classList.remove("hidden");
+  $("vidProgressWrap").classList.remove("hidden");
+  $("vidProgressBar").style.width = "0%";
+  stopSimulator();
+
+  state.simTargetWidth = W;
+  state.simTargetHeight = H;
+
+  const frames = [];
+  let maxOpsObserved = 0;
+
+  try {
+    // Helper to seek video accurately
+    const seekVideo = (timeSec) => {
+      return new Promise((resolve, reject) => {
+        const onSeeked = () => {
+          vid.removeEventListener("seeked", onSeeked);
+          vid.removeEventListener("error", onError);
+          resolve();
+        };
+        const onError = (e) => {
+          vid.removeEventListener("seeked", onSeeked);
+          vid.removeEventListener("error", onError);
+          reject(e);
+        };
+        vid.addEventListener("seeked", onSeeked);
+        vid.addEventListener("error", onError);
+        vid.currentTime = timeSec;
+      });
+    };
+
+    for (let i = 0; i < timestamps.length; i++) {
+      if (state.cancelVideoConversion) {
+        setStatus("Video conversion cancelled by user.", "warn");
+        break;
+      }
+
+      const t = timestamps[i];
+      await seekVideo(t);
+
+      // Extract and convert frame
+      const imgData = fitFrame(vid, vid.videoWidth, vid.videoHeight, W, H, fit);
+      const bits = toMonochromeBits(imgData, W, H, threshold, dither, invert);
+      const { frameOps } = bitsToDrawOps(bits, W, H, 39);
+
+      frames.push(frameOps);
+      if (frameOps.length > maxOpsObserved) maxOpsObserved = frameOps.length;
+
+      // Progress reporting
+      const pct = Math.round(((i + 1) / timestamps.length) * 100);
+      $("vidProgressBar").style.width = pct + "%";
+      setStatus(`Decoding video frame ${i + 1} / ${timestamps.length} (${pct}%)...`);
+    }
+
+    if (!state.cancelVideoConversion && frames.length > 0) {
+      const anim = {
+        name: animName,
+        frameMs: frameMs,
+        frames: frames
+      };
+      finishConversion(anim, `Video converted · ${frames.length} frames · ${fps} FPS (${frameMs}ms) · Max ${maxOpsObserved}/40 ops/frame`);
+    }
+  } catch (err) {
+    console.error("Video processing failure:", err);
+    setStatus("Failed during video frame extraction: " + err.message, "err");
+  } finally {
+    state.isConvertingVideo = false;
+    $("vidConvertBtn").disabled = false;
+    $("vidCancelBtn").classList.add("hidden");
+    $("vidProgressWrap").classList.add("hidden");
+  }
+}
+
+// --- FINISH CONVERSION & VALIDATION ---
+function finishConversion(anim, successMsg) {
+  state.animation = anim;
+  state.rawJson = JSON.stringify(anim, null, 2);
+  $("jsonOutput").value = state.rawJson;
+  $("downloadJsonBtn").disabled = false;
+  $("copyJsonBtn").disabled = false;
+
+  // Validate strict firmware compatibility
+  const issues = [];
+  const payloadBytes = new Blob([state.rawJson]).size;
+  $("jsonSizeLabel").textContent = `Payload size: ${payloadBytes.toLocaleString()} bytes (Firmware max ~16,000 bytes)`;
+
+  if (anim.frames.length > 100) issues.push(`Frame count (${anim.frames.length}) exceeds firmware maximum of 100.`);
+  if (anim.frameMs < 40 || anim.frameMs > 1000) issues.push(`frameMs (${anim.frameMs}) out of allowed range [40, 1000].`);
+  if (payloadBytes > 16384) issues.push(`Payload (${payloadBytes} bytes) exceeds standard ~16KB JSON buffer.`);
+
+  let badOpFound = false;
+  let opOverflowFrame = -1;
+  anim.frames.forEach((frame, idx) => {
+    if (frame.length > 40) {
+      badOpFound = true;
+      if (opOverflowFrame === -1) opOverflowFrame = idx + 1;
+    }
+    frame.forEach(op => {
+      if (op.t !== "C" && op.t !== "r") issues.push(`Unknown opcode '${op.t}' in frame ${idx + 1}`);
+      if (op.t === "r") {
+        if (op.a < 0 || op.b < 0 || op.c <= 0 || op.d <= 0) {
+          issues.push(`Invalid rect bounds at frame ${idx + 1}: ${JSON.stringify(op)}`);
+        }
+      }
+    });
+  });
+
+  if (badOpFound) issues.push(`Frame ${opOverflowFrame} has >40 ops (Firmware MAX_ANIM_OPS exceeded).`);
+
+  const isValid = issues.length === 0;
+  const detailsHtml = isValid
+    ? `✓ ${anim.frames.length} frames · ${anim.frameMs}ms interval · 0..40 ops/frame · ${payloadBytes} bytes. Ready for LuvuBox.`
+    : `<span style="color:var(--err)">Firmware checks failed:</span><br>${issues.join("<br>")}`;
+
+  updateValidationUI(isValid, "", detailsHtml);
+  setStatus(successMsg);
+
+  // Setup simulator
+  setupSimulator();
+}
+
+// --- OLED HARDWARE SIMULATOR ---
+function setupSimulator() {
+  if (!state.animation || !state.animation.frames.length) return;
+  const scrubber = $("simScrubber");
+  scrubber.disabled = false;
+  scrubber.min = 0;
+  scrubber.max = state.animation.frames.length - 1;
+  scrubber.value = 0;
+
+  $("simPlayPause").disabled = false;
+  $("simStepBack").disabled = false;
+  $("simStepNext").disabled = false;
+
+  state.simFrameIndex = 0;
+  renderSimFrame(0);
+
+  // Auto-play for multi-frame animations
+  if (state.animation.frames.length > 1) {
+    startSimulator();
+  } else {
+    stopSimulator();
+  }
+}
+
+function renderSimFrame(frameIdx) {
+  if (!state.animation || !state.animation.frames[frameIdx]) return;
+  const frame = state.animation.frames[frameIdx];
+
+  simCanvas.width = state.simTargetWidth;
+  simCanvas.height = state.simTargetHeight;
+
+  // Execute drawing opcodes identically to firmware
+  frame.forEach(op => {
+    if (op.t === "C") {
+      simCtx.fillStyle = "#000000";
+      simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+    } else if (op.t === "r") {
+      simCtx.fillStyle = "#ffffff";
+      simCtx.fillRect(op.a, op.b, op.c, op.d);
+    }
+  });
+
+  // Update simulator UI labels
+  $("simScrubber").value = frameIdx;
+  $("simFrameCounter").textContent = `Frame: ${frameIdx + 1} / ${state.animation.frames.length}`;
+  const effectiveFps = (1000 / state.animation.frameMs).toFixed(1);
+  $("simTiming").textContent = `Interval: ${state.animation.frameMs} ms (${effectiveFps} fps)`;
+}
+
+function startSimulator() {
+  if (state.simPlaying || !state.animation) return;
+  state.simPlaying = true;
+  $("simPlayPause").textContent = "⏸ Pause";
+
+  const tick = () => {
+    if (!state.simPlaying) return;
+    state.simFrameIndex = (state.simFrameIndex + 1) % state.animation.frames.length;
+    renderSimFrame(state.simFrameIndex);
+    state.simTimer = setTimeout(tick, state.animation.frameMs);
+  };
+  state.simTimer = setTimeout(tick, state.animation.frameMs);
+}
+
+function stopSimulator() {
+  state.simPlaying = false;
+  $("simPlayPause").textContent = "▶ Play";
+  if (state.simTimer) {
+    clearTimeout(state.simTimer);
+    state.simTimer = null;
+  }
+}
+
+$("simPlayPause").addEventListener("click", () => {
+  if (state.simPlaying) stopSimulator();
+  else startSimulator();
+});
+
+$("simStepBack").addEventListener("click", () => {
+  if (!state.animation) return;
+  stopSimulator();
+  state.simFrameIndex = (state.simFrameIndex - 1 + state.animation.frames.length) % state.animation.frames.length;
+  renderSimFrame(state.simFrameIndex);
+});
+
+$("simStepNext").addEventListener("click", () => {
+  if (!state.animation) return;
+  stopSimulator();
+  state.simFrameIndex = (state.simFrameIndex + 1) % state.animation.frames.length;
+  renderSimFrame(state.simFrameIndex);
+});
+
+$("simScrubber").addEventListener("input", (e) => {
+  if (!state.animation) return;
+  stopSimulator();
+  state.simFrameIndex = +e.target.value;
+  renderSimFrame(state.simFrameIndex);
+});
+
+// --- EXPORT JSON ---
+$("downloadJsonBtn").addEventListener("click", () => {
+  if (!state.rawJson || !state.animation) return;
+  const safeName = (state.animation.name || "luvubox-animation")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-|-$/g, "") || "luvubox-animation";
+  
+  const blob = new Blob([state.rawJson], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${safeName}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+$("copyJsonBtn").addEventListener("click", async () => {
+  if (!state.rawJson) return;
+  try {
+    await navigator.clipboard.writeText(state.rawJson);
+    setStatus("Animation JSON copied to clipboard!");
+  } catch (err) {
+    $("jsonOutput").select();
+    document.execCommand("copy");
+    setStatus("JSON selected/copied. Use Ctrl+C if needed.");
+  }
+});
+
+// Initialize clean canvas display
+simCtx.fillStyle = "#000000";
+simCtx.fillRect(0, 0, 128, 64);
+</script>
+</body>
+</html>
